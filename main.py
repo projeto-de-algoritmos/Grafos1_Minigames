@@ -75,14 +75,34 @@ def make_move(row, col):
         if check_win(board, currentPlayer):
             messagebox.showinfo("Fim de jogo", f"Jogador {currentPlayer} ganhou!")
             game_over = True
+            reset_question()
         elif check_draw(board):
             messagebox.showinfo("Fim de jogo", "Empate!")
             game_over = True
+            reset_question()
         else:
             currentPlayer = "X" if currentPlayer == "O" else "O"
             if currentPlayer == "O" and not game_over:
                 row, col = find_best_move(board)
                 make_move(row, col)
+
+def reset_question():
+    result = messagebox.askyesno("Reiniciar?", "Deseja reiniciar o jogo?")
+    if result:
+        reset_game()
+    else:
+        exit()
+
+def reset_game():
+    global board, currentPlayer, game_over
+
+    board = create_board()
+    currentPlayer = "X"
+    game_over = False
+
+    for row in range(3):
+        for col in range(3):
+            buttons[row][col].config(text=" ", state="normal")
 
 app = tk.Tk()
 app.title("Jogo da Velha")
