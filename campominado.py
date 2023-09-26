@@ -8,8 +8,20 @@ WIDTH, HEIGHT = 400, 400
 GRID_SIZE = 20
 NUM_ROWS = HEIGHT // GRID_SIZE
 NUM_COLS = WIDTH // GRID_SIZE
-NUM_MINES = 40
+MINES = {
+    "Fácil": 30,
+    "Média": 50,
+    "Difícil": 99,
+    "Impossível": 180
+}
 MINE = -1
+
+# Estados do jogo
+MENU = "menu"
+PLAYING = "playing"
+current_state = MENU  # Estado inicial
+current_difficulty = None  # Dificuldade selecionada
+
 
 # Cores
 WHITE = (255, 255, 255)
@@ -29,6 +41,10 @@ pygame.display.set_caption("Campo Minado")
 
 # Função para criar o tabuleiro
 def create_board():
+    if current_difficulty:
+        NUM_MINES = MINES[current_difficulty]
+    else:
+        NUM_MINES = 40
     board = [[0 for _ in range(NUM_COLS)] for _ in range(NUM_ROWS)]
     mines = random.sample(range(NUM_COLS * NUM_ROWS), NUM_MINES)
     for mine in mines:
@@ -81,6 +97,14 @@ def draw_board(board, revealed):
                 else:
                     pygame.draw.rect(screen, GRAY, rect)  # Cor das células vazias
 
+# Função para exibir a mensagem de vitória
+def victory_message():
+    font = pygame.font.Font(None, 48)
+    text = font.render("Você venceu!", True, GREEN)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    screen.blit(text, text_rect)
+    pygame.display.flip()
+
 """def toggle_show_bfs(show_bfs):
     font = pygame.font.Font(None, 24)
     if show_bfs:
@@ -90,46 +114,95 @@ def draw_board(board, revealed):
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT - 20))
     screen.blit(text, text_rect)
 """
+
+def show_difficulty_menu():
+    global current_state, current_difficulty
+    font = pygame.font.Font(None, 36)
+    text = font.render("Selecione a Dificuldade:", True, BLACK)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 40))
+    screen.blit(text, text_rect)
+
+    button_rects = []
+    for idx, (difficulty, num_mines) in enumerate(MINES.items()):
+        button_rect = pygame.Rect(
+            WIDTH // 4,
+            HEIGHT // 2 + idx * 50,
+            WIDTH // 2,
+            40
+        )
+        pygame.draw.rect(screen, GRAY, button_rect)
+        pygame.draw.rect(screen, BLACK, button_rect, 1)
+        text = font.render(difficulty, True, BLACK)
+        text_rect = text.get_rect(center=button_rect.center)
+        screen.blit(text, text_rect)
+        button_rects.append((button_rect, difficulty, num_mines))
+
+    pygame.display.flip()
+
+    while current_state == MENU:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                x, y = event.pos
+                for button_rect, difficulty, num_mines in button_rects:
+                    if button_rect.collidepoint(x, y):
+                        current_difficulty = difficulty
+                        current_state = PLAYING
+
 # Função principal do jogo
 def main():
-    board = create_board()
-    revealed = [[False for _ in range(NUM_COLS)] for _ in range(NUM_ROWS)]
-    #show_bfs = False
+    global current_state, current_difficulty
+    while True:
+        if current_state == MENU:
+            show_difficulty_menu()
 
-    game_over = False
+        if current_state == PLAYING:
+            board = create_board()
+            revealed = [[False for _ in range(NUM_COLS)] for _ in range(NUM_ROWS)]
 
-    while not game_over:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Botão esquerdo do mouse
-                x, y = event.pos
-                x //= GRID_SIZE
-                y //= GRID_SIZE
-                if not revealed[y][x]:
-                    if board[y][x] == 0:
-                        bfs_reveal(board, revealed, x, y)
-                    else:
-                        revealed[y][x] = True
-                        if board[y][x] == MINE:
-                            game_over = True
-            if all(all(revealed[y][x] or board[y][x] == MINE for x in range(NUM_COLS)) for y in range(NUM_ROWS)):
+        game_over = False
+        victory = False
+
+        while not game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    x, y = event.pos
+                    x //= GRID_SIZE
+                    y //= GRID_SIZE
+                    if not revealed[y][x]:
+                        if board[y][x] == 0:
+                            bfs_reveal(board, revealed, x, y)
+                        else:
+                            revealed[y][x] = True
+                            if board[y][x] == MINE:
+                                game_over = True
+
+            screen.fill(GRAY)
+            draw_board(board, revealed)
+
+            pygame.display.flip()
+
+            # Verifique a vitória
+            victory = all(all(revealed[y][x] or board[y][x] == MINE for x in range(NUM_COLS)) for y in range(NUM_ROWS) for x in range(NUM_COLS) if board[y][x] != MINE)
+
+            if victory:
                 game_over = True
 
-        screen.fill(GRAY)
-        draw_board(board, revealed)
-        #toggle_show_bfs(show_bfs)
+        if victory:
+            victory_message()
+        else:
+            game_over_message()
 
-        pygame.display.flip()
-
-    game_over_message()
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
 if __name__ == "__main__":
     main()
