@@ -69,6 +69,11 @@ def bfs_reveal(board, revealed, x, y):
     revealed[y][x] = True
 
     while queue:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
         cx, cy = queue.popleft()
 
         for dx in range(-1, 2):
@@ -78,6 +83,14 @@ def bfs_reveal(board, revealed, x, y):
                     revealed[ny][nx] = True
                     if board[ny][nx] == 0:
                         queue.append((nx, ny))
+
+        # Pausa para criar um efeito de animação
+        pygame.time.delay(100)  # Ajuste o valor de acordo com a velocidade desejada
+
+        # Atualize a tela após cada iteração para mostrar o progresso
+        screen.fill(GRAY)
+        draw_board(board, revealed)
+        pygame.display.flip()
 
 # Função para desenhar o tabuleiro
 def draw_board(board, revealed):
@@ -105,7 +118,8 @@ def victory_message():
     screen.blit(text, text_rect)
     pygame.display.flip()
 
-"""def toggle_show_bfs(show_bfs):
+"""
+def toggle_show_bfs(show_bfs):
     font = pygame.font.Font(None, 24)
     if show_bfs:
         text = font.render("Mostrar BFS em Tempo Real: Ativado", True, BLACK)
