@@ -1,108 +1,135 @@
-import tkinter as tk
+import pygame
+import sys
 import random
-from queue import Queue
+from collections import deque
 
-# Dimensões do campo minado
-ROWS, COLS = 10, 10
-MINE_COUNT = 20
+# Configurações
+WIDTH, HEIGHT = 400, 400
+GRID_SIZE = 20
+NUM_ROWS = HEIGHT // GRID_SIZE
+NUM_COLS = WIDTH // GRID_SIZE
+NUM_MINES = 40
+MINE = -1
 
 # Cores
-UNEXPLORED_COLOR = "gray"
-EXPLORED_COLOR = "lightgray"
-MINE_COLOR = "red"
-FONT_SIZE = 12
+WHITE = (255, 255, 255)
+GRAY = (192, 192, 192)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+CYAN = (0, 255, 255)
+MAGENTA = (255, 0, 255)
+YELLOW = (255, 255, 0)
 
-def create_minefield():
-    minefield = [[" " for _ in range(COLS)] for _ in range(ROWS)]
-    mines = random.sample(range(ROWS * COLS), MINE_COUNT)
+# Inicialização do pygame
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Campo Minado")
 
+# Função para criar o tabuleiro
+def create_board():
+    board = [[0 for _ in range(NUM_COLS)] for _ in range(NUM_ROWS)]
+    mines = random.sample(range(NUM_COLS * NUM_ROWS), NUM_MINES)
     for mine in mines:
-        row = mine // COLS
-        col = mine % COLS
-        minefield[row][col] = "X"
+        x, y = mine % NUM_COLS, mine // NUM_COLS
+        board[y][x] = MINE
+        for dx in range(-1, 2):
+            for dy in range(-1, 2):
+                if 0 <= x + dx < NUM_COLS and 0 <= y + dy < NUM_ROWS and board[y + dy][x + dx] != MINE:
+                    board[y + dy][x + dx] += 1
+    return board
 
-    return minefield
+def game_over_message():
+    font = pygame.font.Font(None, 48)
+    text = font.render("Game Over", True, RED)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    screen.blit(text, text_rect)
+    pygame.display.flip()
 
-def count_adjacent_mines(minefield, row, col):
-    count = 0
-    for dr in [-1, 0, 1]:
-        for dc in [-1, 0, 1]:
-            r, c = row + dr, col + dc
-            if 0 <= r < ROWS and 0 <= c < COLS and minefield[r][c] == "X":
-                count += 1
-    return count
+# Função para revelar células vazias e seus vizinhos com números usando BFS
+def bfs_reveal(board, revealed, x, y):
+    queue = deque([(x, y)])
+    revealed[y][x] = True
 
-def bfs_explore(minefield, row, col):
-    if minefield[row][col] != " ":
-        return
+    while queue:
+        cx, cy = queue.popleft()
 
-    minefield[row][col] = str(count_adjacent_mines(minefield, row, col))
+        for dx in range(-1, 2):
+            for dy in range(-1, 2):
+                nx, ny = cx + dx, cy + dy
+                if 0 <= nx < NUM_COLS and 0 <= ny < NUM_ROWS and not revealed[ny][nx]:
+                    revealed[ny][nx] = True
+                    if board[ny][nx] == 0:
+                        queue.append((nx, ny))
 
-    if minefield[row][col] == "0":
-        queue = Queue()
-        queue.put((row, col))
+# Função para desenhar o tabuleiro
+def draw_board(board, revealed):
+    for y in range(NUM_ROWS):
+        for x in range(NUM_COLS):
+            rect = pygame.Rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE)
+            pygame.draw.rect(screen, WHITE, rect)
+            pygame.draw.rect(screen, BLACK, rect, 1)  # Adicionando bordas
+            if revealed[y][x]:
+                if board[y][x] == MINE:
+                    pygame.draw.circle(screen, BLACK, rect.center, GRID_SIZE // 2)
+                elif board[y][x] > 0:
+                    font = pygame.font.Font(None, 36)
+                    text = font.render(str(board[y][x]), True, BLUE)  # Cor dos números
+                    text_rect = text.get_rect(center=rect.center)
+                    screen.blit(text, text_rect)
+                else:
+                    pygame.draw.rect(screen, GRAY, rect)  # Cor das células vazias
 
-        while not queue.empty():
-            r, c = queue.get()
-            for dr in [-1, 0, 1]:
-                for dc in [-1, 0, 1]:
-                    nr, nc = r + dr, c + dc
-                    if 0 <= nr < ROWS and 0 <= nc < COLS and minefield[nr][nc] == " ":
-                        minefield[nr][nc] = str(count_adjacent_mines(minefield, nr, nc))
-                        if minefield[nr][nc] == "0":
-                            queue.put((nr, nc))
-
-def reveal_minefield(row, col):
-    if minefield[row][col] == "X":
-        game_over_label.config(text="Game Over!", fg="red")
-        reveal_all_mines()
+"""def toggle_show_bfs(show_bfs):
+    font = pygame.font.Font(None, 24)
+    if show_bfs:
+        text = font.render("Mostrar BFS em Tempo Real: Ativado", True, BLACK)
     else:
-        bfs_explore(minefield, row, col)
-        update_display()
+        text = font.render("Mostrar BFS em Tempo Real: Desativado", True, BLACK)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT - 20))
+    screen.blit(text, text_rect)
+"""
+# Função principal do jogo
+def main():
+    board = create_board()
+    revealed = [[False for _ in range(NUM_COLS)] for _ in range(NUM_ROWS)]
+    #show_bfs = False
 
-def reveal_all_mines():
-    for r in range(ROWS):
-        for c in range(COLS):
-            if minefield[r][c] == "X":
-                mine_buttons[r][c].config(text="X", bg=MINE_COLOR)
-            else:
-                mine_buttons[r][c].config(state="disabled")
+    game_over = False
 
-def update_display():
-    for r in range(ROWS):
-        for c in range(COLS):
-            if minefield[r][c] != " ":
-                mine_buttons[r][c].config(text=minefield[r][c], state="disabled", bg=EXPLORED_COLOR)
+    while not game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Botão esquerdo do mouse
+                x, y = event.pos
+                x //= GRID_SIZE
+                y //= GRID_SIZE
+                if not revealed[y][x]:
+                    if board[y][x] == 0:
+                        bfs_reveal(board, revealed, x, y)
+                    else:
+                        revealed[y][x] = True
+                        if board[y][x] == MINE:
+                            game_over = True
+            if all(all(revealed[y][x] or board[y][x] == MINE for x in range(NUM_COLS)) for y in range(NUM_ROWS)):
+                game_over = True
 
-def button_click(row, col):
-    if not game_over:
-        reveal_minefield(row, col)
-        check_win_condition()
+        screen.fill(GRAY)
+        draw_board(board, revealed)
+        #toggle_show_bfs(show_bfs)
 
-def check_win_condition():
-    if all(minefield[r][c] != " " or minefield[r][c] == "X" for r in range(ROWS) for c in range(COLS)):
-        game_over_label.config(text="You Win!", fg="green")
+        pygame.display.flip()
 
-# Criação do campo minado
-minefield = create_minefield()
+    game_over_message()
 
-# Configuração da interface gráfica
-root = tk.Tk()
-root.title("Campo Minado")
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-mine_buttons = []
-
-for r in range(ROWS):
-    row_buttons = []
-    for c in range(COLS):
-        button = tk.Button(root, text=" ", font=("Helvetica", FONT_SIZE), width=2, height=1,
-                           command=lambda row=r, col=c: button_click(row, col))
-        button.grid(row=r, column=c)
-        row_buttons.append(button)
-    mine_buttons.append(row_buttons)
-
-game_over = False
-game_over_label = tk.Label(root, text="", font=("Helvetica", FONT_SIZE))
-game_over_label.grid(row=ROWS, columnspan=COLS)
-
-root.mainloop()
+if __name__ == "__main__":
+    main()
