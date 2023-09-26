@@ -1,7 +1,5 @@
 # Minigames com Grafos1
 
-<!-- **Número da Lista**: X<br> -->
-
 **Conteúdo da Disciplina**: Grafos 1<br>
 
 ## Alunos
@@ -16,6 +14,10 @@
 O objetivo do projeto é desenvolver dois jogos distintos, o Jogo da Velha e o Campo Minado, aplicando os conceitos e técnicas aprendidos na disciplina de Projeto de Algoritmos. No Jogo da Velha, será utilizado uma matriz de adjacência 3x3 na implementação, e o objetivo é verificar nas proximidades de cada jogada se é formado um trio consecutivo de mesmo símbolo (no sentido horizontal, vertical ou diagonal) ou se a matriz está completa, resultando em um empate. A máquina responderá com a melhor jogada possível para dificultar a vitória do jogador.
 
 Quanto ao Campo Minado, a abordagem incluirá a implementação de um algoritmo BFS (Busca em Largura) para revelar os campos vazios no tabuleiro com uma pausa entre as interações para visualizar a busca.
+
+### Vídeo de explicação
+
+[Sharepoint](https://unbbr.sharepoint.com/sites/Tubaro/Documentos%20Compartilhados/General/Recordings/Reuni%C3%A3o-20230925_233943-Grava%C3%A7%C3%A3o%20de%20Reuni%C3%A3o.mp4?web=1)
 
 ## Screenshots
 
