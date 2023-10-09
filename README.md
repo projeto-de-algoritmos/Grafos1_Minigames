@@ -17,6 +17,10 @@ O objetivo do projeto é desenvolver dois jogos distintos, o Jogo da Velha e o C
 
 Quanto ao Campo Minado, a abordagem incluirá a implementação de um algoritmo BFS (Busca em Largura) para revelar os campos vazios no tabuleiro com uma pausa entre as interações para visualizar a busca.
 
+## Vídeo de Apresentação
+
+[Apresentação do Trabalho](./assets/Reunião-20230925_233943-Gravação%20de%20Reunião.mp4)
+
 ## Screenshots
 
 ### Jogo da Velha
@@ -86,3 +90,4 @@ Para rodar o projeto, é necessário que o suporte a linguagem Python esteja ins
 Após rodar os comandos acima o Jogo da Velha Impossível deve abrir em outra janela e é necessário iniciar o jogo clicando em algum dos 9 quadrados. O jogador joga com o símbolo `X`, enquanto a máquina joga com `O`. O objetivo do jogador é formar um trio consecutivo de mesmos símbolos no sentido horizontal, vertical ou diagonal. Ao fim do jogo, será indicada uma vitória, derrota ou empate, além da possíbilidade de jogar novamente.
 
 O Campo Minado é um jogo de lógica e estratégia que geralmente é jogado em um tabuleiro retangular, no qual você deve revelar todos os campos vazios sem detonar as minas escondidas. Os valores nos quadrados revelados indicam as minas adjacentes, clique nos quadrados para revelar o que existe ali.
+

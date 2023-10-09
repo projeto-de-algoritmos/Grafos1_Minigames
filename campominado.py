@@ -9,7 +9,7 @@ GRID_SIZE = 20
 NUM_ROWS = HEIGHT // GRID_SIZE
 NUM_COLS = WIDTH // GRID_SIZE
 MINES = {
-    "Fácil": 30,
+    "Fácil": 1,
     "Média": 50,
     "Difícil": 99,
     "Impossível": 180
@@ -21,7 +21,6 @@ MENU = "menu"
 PLAYING = "playing"
 current_state = MENU  # Estado inicial
 current_difficulty = None  # Dificuldade selecionada
-
 
 # Cores
 WHITE = (255, 255, 255)
