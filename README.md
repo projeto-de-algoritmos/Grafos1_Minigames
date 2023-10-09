@@ -1,7 +1,5 @@
 # Minigames com Grafos1
 
-<!-- **Número da Lista**: X<br> -->
-
 **Conteúdo da Disciplina**: Grafos 1<br>
 
 ## Alunos
@@ -17,7 +15,7 @@ O objetivo do projeto é desenvolver dois jogos distintos, o Jogo da Velha e o C
 
 Quanto ao Campo Minado, a abordagem incluirá a implementação de um algoritmo BFS (Busca em Largura) para revelar os campos vazios no tabuleiro com uma pausa entre as interações para visualizar a busca.
 
-## Vídeo de Apresentação
+## Vídeo de Explicação
 
 [Apresentação do Trabalho](./assets/Reunião-20230925_233943-Gravação%20de%20Reunião.mp4)
 
